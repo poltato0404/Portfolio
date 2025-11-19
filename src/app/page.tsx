@@ -1,50 +1,55 @@
-'use client'
+"use client";
 
-import { useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
+import { useRef } from "react";
 
-import darkBackground from "../../public/darkbg.png";
-import background from "../../public/bg.png";
-import unlitLamp from "../../public/unlit.png";
-import litLamp from "../../public/lantern.gif";
-import card from "../../public/card.png";
+import bg1 from "../../public/bg1.svg";
+import bg2 from "../../public/bg2.svg";
+import bg3 from "../../public/bg3.svg";
+import bg4 from "../../public/bg4.svg";
+
+const sections = [
+  { title: "Work Experience", bg: bg1 },
+  { title: "Web Development", bg: bg2 },
+  { title: "Cybersecurity", bg: bg3 },
+  { title: "Skills", bg: bg4 },
+];
 
 export default function Home() {
-  const [isOn, setIsOn] = useState(false);
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: containerRef });
+  const blurAmount = useTransform(scrollYProgress, [0, 1], ["0px", "15px"]);
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen">
-      {/* Background Image */}
-      <div className="absolute inset-0 -z-10">
-        <Image
-          alt="Background"
-          src={isOn ? darkBackground : background}
-          fill
-          unoptimized
-          style={{ imageRendering: "pixelated" }}
-          placeholder="blur"
-        />
-      </div>
+    <div
+      ref={containerRef}
+      className="h-screen w-screen overflow-y-scroll snap-y snap-mandatory"
+    >
+      {sections.map((section, index) => (
+        <motion.section
+          key={index}
+          className="relative h-screen w-full snap-start flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+        >
+          <motion.div style={{ filter: blurAmount }}>
+            <Image
+              src={section.bg}
+              alt={`bg-${index}`}
+              fill
+              className="object-cover"
+              priority={index === 0} 
+            />
+          </motion.div>
+          <div className="absolute inset-0 bg-black/40" />
 
-      {/* Lamp Toggle (top-right) */}
-      <Image
-        src={isOn ? unlitLamp : litLamp}
-        alt="Toggle Image"
-        width={100}
-        loading="eager"
-        onClick={() => setIsOn(!isOn)}
-        className="absolute top-4 right-4 cursor-pointer transition-transform duration-300 hover:scale-110"
-      />
-
-      {/* Centered Card */}
-      <div className="flex items-center justify-center">
-        <Image
-          src={card}
-          alt="Centered image"
-          width={1000}
-          className="rounded-lg shadow-lg"
-        />
-      </div>
+          <h1 className="relative z-10 text-4xl font-bold text-white">
+            {section.title}
+          </h1>
+        </motion.section>
+      ))}
     </div>
   );
 }
